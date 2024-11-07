@@ -1,0 +1,26 @@
+env: "local" # dev, prod
+
+grpc:
+  port: 44046
+  timeout: 10h
+
+cache:
+  lifetime: 15m
+
+kafka:
+  topics_write: auth-events
+  topics_read: user_events
+  group_id: sso-service
+
+clients:
+  user:
+    address: host.docker.internal:44045
+    timeout: 10s
+    retries_count: 5
+    insecure: true
+
+  referral:
+    address: host.docker.internal:44047
+    timeout: 10s
+    retries_count: 5
+    insecure: true

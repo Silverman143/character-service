@@ -1,0 +1,30 @@
+env: "local" # dev, prod
+
+grpc:
+  port: 44046
+  timeout: 10h
+
+cache:
+  lifetime: 15m
+
+kafka:
+  topics_write: login-events
+  topics_read: user-events
+  group_id: sso-service
+  brokers:
+    - b-1-public.chadnaldokafka.pcerrx.c4.kafka.eu-central-1.amazonaws.com:9196
+    - b-2-public.chadnaldokafka.pcerrx.c4.kafka.eu-central-1.amazonaws.com:9196
+    - b-3-public.chadnaldokafka.pcerrx.c4.kafka.eu-central-1.amazonaws.com:9196
+
+clients:
+  user:
+    address: localhost:44045
+    timeout: 10s
+    retries_count: 5
+    insecure: true
+
+  referral:
+    address: localhost:44047
+    timeout: 10s
+    retries_count: 5
+    insecure: true

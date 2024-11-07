@@ -1,0 +1,67 @@
+version: "3"
+
+dotenv: [".env"]
+
+tasks:
+  create:fakedata:
+    desc: Insert fake data in tables
+    cmds:
+      - go run cmd/fakedata/apply_fakedata.go -fakedata-path ./fakedata/create  --config ./config/local.yaml
+
+  create:fakedata:prod:
+    desc: Insert fake data in tables
+    cmds:
+      - go run cmd/fakedata/apply_fakedata.go -fakedata-path ./fakedata/create  --config ./config/local.yaml
+
+  remove:fakedata:
+    desc: Remove fake data from tables
+    cmds:
+      - go run cmd/fakedata/apply_fakedata.go -fakedata-path ./fakedata/remove  --config ./config/local.yaml
+
+  migrate:up:
+    desc: Run database migrations
+    cmds:
+      - go run cmd/migrator/main.go -db-url="postgres://{{.POSTGRES_USER}}:{{.POSTGRES_PASSWORD}}@{{.POSTGRES_HOST}}:{{.POSTGRES_PORT}}/{{.POSTGRES_DB}}?sslmode=disable" -migrations-path="./migrations"
+
+  migrate:down:
+    desc: Rollback the last database migration
+    cmds:
+      - go run cmd/migrator/main.go -db-url="postgres://{{.POSTGRES_USER}}:{{.POSTGRES_PASSWORD}}@{{.POSTGRES_HOST}}:{{.POSTGRES_PORT}}/{{.POSTGRES_DB}}?sslmode=disable" -migrations-path="./migrations" -down
+
+  migrate:create:
+    desc: Create a new migration file
+    cmds:
+      - |
+        timestamp=$(date +%Y%m%d%H%M%S)
+        name="{{.CLI_ARGS}}"
+        if [ -z "$name" ]; then
+          echo "Please provide a name for the migration"
+          exit 1
+        fi
+        up_file="./migrations/${timestamp}_${name}.up.sql"
+        down_file="./migrations/${timestamp}_${name}.down.sql"
+        touch "$up_file" "$down_file"
+        echo "Created migration files:"
+        echo "  $up_file"
+        echo "  $down_file"
+
+  run:
+    desc: Run service
+    cmds:
+      - go run ./cmd/character/main.go --config ./config/local.yaml
+  run:docker:
+    desc: Run docker image
+    cmds:
+      - docker run --env-file .env.Docker -p 44046:44046 chadnaldo-character:latest --config ./dockerConf.yaml
+
+  build:docker:
+    desc: Build docker mage
+    cmds:
+      - docker build -t chadnaldo-character:latest .
+  push:docker:
+    desc: push docker imag
+    cmds:
+      - docker tag chadnaldo-character:latest 296062570754.dkr.ecr.eu-central-1.amazonaws.com/chadnaldo/character:latest && docker push 296062570754.dkr.ecr.eu-central-1.amazonaws.com/chadnaldo/character:latest
+
+vars:
+  MIGRATE_CMD: go run cmd/migrate/main.go
